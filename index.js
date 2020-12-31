@@ -6,7 +6,6 @@ const config = require('yargs')
     .env('MQTT2INFLUX')
     .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
-    .describe('name', 'instance name. used as mqtt client id and as prefix for connected topic')
     .describe('mqtt-url', 'mqtt broker url. See https://github.com/mqttjs/MQTT.js#connect-using-a-url')
     .describe('influx-host')
     .describe('influx-port')
@@ -18,7 +17,6 @@ const config = require('yargs')
         v: 'verbosity'
     })
     .default({
-        name: 'influx',
         'mqtt-url': 'mqtt://127.0.0.1',
         'influx-host': '127.0.0.1',
         'influx-port': 8086,
@@ -45,14 +43,12 @@ const influx = new Influx.InfluxDB({
 
 log.info('mqtt trying to connect', config.mqttUrl);
 const mqtt = new MqttSmarthome(config.mqttUrl, {
-    logger: log,
-    will: {topic: config.name + '/maintenance/online', payload: 'false', retain: true}
+    logger: log
 });
 mqtt.connect();
 
 mqtt.on('connect', () => {
     log.info('mqtt connected', config.mqttUrl);
-    mqtt.publish(config.name + '/maintenance/online', true, {retain: true});
 });
 
 mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
