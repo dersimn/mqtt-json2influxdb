@@ -82,7 +82,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
                 point.timestamp = ts;
                 delete point.fields.ts;
             } else {
-                point.tags.invalidTimestamp = true;
+                point.tags.invalid_timestamp = true;
             }
         }
 
