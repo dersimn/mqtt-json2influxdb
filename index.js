@@ -21,7 +21,7 @@ const config = require('yargs')
         'influx-host': '127.0.0.1',
         'influx-port': 8086,
         'influx-database': 'mqtt',
-        'subscription': [
+        subscription: [
             '#'
         ]
     })
@@ -34,7 +34,7 @@ const flatten = require('flat');
 
 log.setLevel(config.verbosity);
 log.info(pkg.name + ' ' + pkg.version + ' starting');
-log.debug("loaded config: ", config);
+log.debug('loaded config: ', config);
 
 const influx = new Influx.InfluxDB({
     host: config.influxHost,
@@ -61,7 +61,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     }
 
     // Build InfluxDB Datapoint
-    let point = {};
+    const point = {};
     point.measurement = Influx.escape.measurement(topic);
     point.tags = {};
     point.timestamp = receiveTimestamp;
@@ -89,10 +89,10 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         for (const key in point.fields) {
             // Provide int version of boolean values until InfluxDB or Grafana support type conversions
             if (typeof point.fields[key] === 'boolean') {
-                point.fields['__int__'+key] = point.fields[key] ? 1 : 0;
+                point.fields['__int__' + key] = point.fields[key] ? 1 : 0;
             }
         }
-        
+
         delete point.fields.lc;
         delete point.fields.ttl;
     } else {
@@ -102,7 +102,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     // Write Datapoint
     influx.writePoints([point]).then(() => {
         log.debug('influx >', point.measurement);
-    }).catch((err) => {
-        log.warn('influx >', point.measurement, err.message);
+    }).catch(error => {
+        log.warn('influx >', point.measurement, error.message);
     });
 });
