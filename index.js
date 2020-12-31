@@ -30,6 +30,7 @@ const config = require('yargs')
     .argv;
 const MqttSmarthome = require('mqtt-smarthome-connect');
 const Influx = require('influx');
+const flatten = require('flat');
 
 log.setLevel(config.verbosity);
 log.info(pkg.name + ' ' + pkg.version + ' starting');
@@ -52,6 +53,8 @@ mqtt.on('connect', () => {
 });
 
 mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
+    const receiveTimestamp = new Date();
+
     if (packet.retain) {
         // Skip retained messages on start
         return;
@@ -59,38 +62,42 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
 
     // Build InfluxDB Datapoint
     let point = {};
-    point.fields = {};
-    if (typeof message === 'object') {
-        if (Array.isArray(message)) {
-            message.forEach((val, i) => {
-                point.fields['_'+i] = val;
-            });
-        } else {
-            if ('val' in message) {
-                point.fields.value = message.val;
-            }
-            Object.keys(message).forEach(key => {
-                if (key === 'val') return; // 'val' has already been processed
-                if (key === 'ts')  return; // skip mqtt-smarthome specific data
-                if (key === 'lc')  return; // ..
-                if (key === 'ttl') return; // ..
-                if (typeof message[key] === 'object') return;
+    point.measurement = Influx.escape.measurement(topic);
+    point.tags = {};
+    point.timestamp = receiveTimestamp;
 
-                point.fields[key] = message[key];
-            });
-            if ('ts' in message) {
-                let ts = new Date(message.ts);
+    if (typeof message === 'object') {
+        point.fields = flatten(message);
+
+        // Post-process special Keys in Objects
+        if (('val' in point.fields) && !('value' in point.fields)) {
+            point.fields.value = point.fields.val;
+            delete point.fields.val;
+        }
+
+        if ('ts' in point.fields) {
+            const ts = new Date(point.fields);
+
+            if ((receiveTimestamp - ts) <= (5 * 1000)) {
                 point.timestamp = ts;
+                delete point.fields.ts;
+            } else {
+                point.tags.invalidTimestamp = true;
             }
         }
+
+        for (const key in point.fields) {
+            // Provide int version of boolean values until InfluxDB or Grafana support type conversions
+            if (typeof point.fields[key] === 'boolean') {
+                point.fields['__int__'+key] = point.fields[key] ? 1 : 0;
+            }
+        }
+        
+        delete point.fields.lc;
+        delete point.fields.ttl;
     } else {
-        point.fields.value = message;
+        point.fields = {value: message};
     }
-    if (typeof point.fields.value === 'boolean') {
-        // Provide bool transformation until InfluxDB supports type conversions
-        point.fields.intValue = (point.fields.value) ? 1 : 0;
-    }
-    point.measurement = Influx.escape.measurement(topic);
 
     // Write Datapoint
     influx.writePoints([point]).then(() => {
