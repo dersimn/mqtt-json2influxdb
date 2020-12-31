@@ -24,9 +24,7 @@ const config = require('yargs')
         'influx-port': 8086,
         'influx-database': 'mqtt',
         'subscription': [
-            '+/status/#',
-            '+/connected',
-            '+/maintenance/#'
+            '#'
         ]
     })
     .version()
