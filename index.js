@@ -57,15 +57,6 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         return;
     }
 
-    /* Process topic string
-     *     foo/status/bar -> foo//bar
-     *     var/status/foo -> $foo
-     */
-    let tpc = topic.split('/');
-    if (tpc[1] == 'status') tpc[1] = null;
-    topic = tpc.join('/');
-    topic = topic.replace('var//', '$');
-
     // Build InfluxDB Datapoint
     let point = {};
     point.fields = {};
