@@ -67,56 +67,40 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     point.timestamp = receiveTimestamp;
 
     if (typeof message === 'object') {
-        point.fields = flatten(message);
+        const flatMessage = flatten(message);
+        let fieldSet = {};
 
-        // Post-process special Keys in Objects
-        if (('val' in point.fields) && !('value' in point.fields)) {
-            point.fields.value = point.fields.val;
-            delete point.fields.val;
+        // Process special keys
+        if (('val' in flatMessage) && !('value' in flatMessage)) {
+            flatMessage.value = flatMessage.val;
+            delete flatMessage.val;
         }
 
-        if ('ts' in point.fields) {
-            const ts = new Date(point.fields.ts);
+        if ('ts' in flatMessage) {
+            const ts = new Date(flatMessage.ts);
 
             if ((receiveTimestamp - ts) <= (5 * 1000)) {
                 point.tags.valid_timestamp = 'true';
                 point.timestamp = ts;
-                delete point.fields.ts;
+                delete flatMessage.ts;
             } else {
                 point.tags.valid_timestamp = 'false';
             }
         }
 
+        delete flatMessage.lc;
+
         // Provide type casted versions
-        Object.keys(point.fields).forEach(key => {
-            // boolean -> number
-            if (typeof point.fields[key] === 'boolean') {
-                point.fields['__num__' + key] = point.fields[key] ? 1 : 0;
-            }
-
-            if (typeof point.fields[key] === 'string') {
-                const value = point.fields[key];
-
-                const numericValue = Number(value);
-                if (!Number.isNaN(numericValue)) {
-                    point.fields['__num__' + key] = numericValue;
-                }
-
-                if (/^\s*(true|on|enabled{0,1})\s*$/.test(value.toLowerCase())) {
-                    point.fields['__bool__' + key] = true;
-                    point.fields['__num__' + key] = 1;
-                }
-
-                if (/^\s*(false|off|disabled{0,1})\s*$/.test(value.toLowerCase())) {
-                    point.fields['__bool__' + key] = false;
-                    point.fields['__num__' + key] = 0;
-                }
-            }
+        Object.keys(flatMessage).forEach(key => {
+            fieldSet = {
+                ...fieldSet,
+                ...processKeyValue(flatMessage[key], key)
+            };
         });
 
-        delete point.fields.lc;
+        point.fields = fieldSet;
     } else {
-        point.fields = {value: message};
+        point.fields = processKeyValue(message);
     }
 
     // Write Datapoint
