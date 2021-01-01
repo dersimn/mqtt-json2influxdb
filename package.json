@@ -34,6 +34,15 @@
       ],
       "capitalized-comments": [
         "warn"
+      ],
+      "unicorn/prevent-abbreviations": [
+        "warn",
+        {
+          "whitelist": {
+            "tmp": true,
+            "obj": true
+          }
+        }
       ]
     }
   }
