@@ -76,7 +76,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         }
 
         if ('ts' in point.fields) {
-            const ts = new Date(point.fields);
+            const ts = new Date(point.fields.ts);
 
             if ((receiveTimestamp - ts) <= (5 * 1000)) {
                 point.timestamp = ts;
@@ -86,12 +86,32 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
             }
         }
 
-        for (const key in point.fields) {
-            // Provide int version of boolean values until InfluxDB or Grafana support type conversions
+        // Provide type casted versions
+        Object.keys(point.fields).forEach(key => {
+            // boolean -> number
             if (typeof point.fields[key] === 'boolean') {
-                point.fields['__int__' + key] = point.fields[key] ? 1 : 0;
+                point.fields['__num__' + key] = point.fields[key] ? 1 : 0;
             }
-        }
+
+            if (typeof point.fields[key] === 'string') {
+                const value = point.fields[key];
+
+                const numericValue = Number(value);
+                if (!Number.isNaN(numericValue)) {
+                    point.fields['__num__' + key] = numericValue;
+                }
+
+                if (/^\s*(true|on|enabled{0,1})\s*$/.test(value)) {
+                    point.fields['__bool__' + key] = true;
+                    point.fields['__num__' + key] = 1;
+                }
+
+                if (/^\s*(false|off|disabled{0,1})\s*$/.test(value)) {
+                    point.fields['__bool__' + key] = false;
+                    point.fields['__num__' + key] = 0;
+                }
+            }
+        });
 
         delete point.fields.lc;
         delete point.fields.ttl;

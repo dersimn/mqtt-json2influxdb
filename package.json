@@ -31,6 +31,9 @@
     "rules": {
       "camelcase": [
         "warn"
+      ],
+      "capitalized-comments": [
+        "warn"
       ]
     }
   }
