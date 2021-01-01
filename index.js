@@ -115,7 +115,6 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         });
 
         delete point.fields.lc;
-        delete point.fields.ttl;
     } else {
         point.fields = {value: message};
     }
