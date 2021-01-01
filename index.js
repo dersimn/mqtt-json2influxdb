@@ -79,10 +79,11 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
             const ts = new Date(point.fields.ts);
 
             if ((receiveTimestamp - ts) <= (5 * 1000)) {
+                point.tags.valid_timestamp = 'true';
                 point.timestamp = ts;
                 delete point.fields.ts;
             } else {
-                point.tags.invalid_timestamp = true;
+                point.tags.valid_timestamp = 'false';
             }
         }
 
