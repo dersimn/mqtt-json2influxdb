@@ -102,12 +102,12 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
                     point.fields['__num__' + key] = numericValue;
                 }
 
-                if (/^\s*(true|on|enabled{0,1})\s*$/.test(value)) {
+                if (/^\s*(true|on|enabled{0,1})\s*$/.test(value.toLowerCase())) {
                     point.fields['__bool__' + key] = true;
                     point.fields['__num__' + key] = 1;
                 }
 
-                if (/^\s*(false|off|disabled{0,1})\s*$/.test(value)) {
+                if (/^\s*(false|off|disabled{0,1})\s*$/.test(value.toLowerCase())) {
                     point.fields['__bool__' + key] = false;
                     point.fields['__num__' + key] = 0;
                 }

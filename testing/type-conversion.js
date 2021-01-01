@@ -11,6 +11,7 @@ const point = {
         someStringEnabledddd: 'enabledddd',
         someStringEnable: 'enable',
         someStringOn: 'on',
+        someStringON: 'ON',
         someStringDisabled: 'disabled',
         someStringDisable: 'disable',
         someStringOff: 'off',
@@ -43,12 +44,12 @@ Object.keys(point.fields).forEach(key => {
             point.fields['__num__' + key] = numericValue;
         }
 
-        if (/^\s*(true|on|enable[d]{0,1})\s*$/.test(value)) {
+        if (/^\s*(true|on|enable[d]{0,1})\s*$/.test(value.toLowerCase())) {
             point.fields['__bool__' + key] = true;
             point.fields['__num__' + key] = 1;
         }
         
-        if (/^\s*(false|off|disable[d]{0,1})\s*$/.test(value)) {
+        if (/^\s*(false|off|disable[d]{0,1})\s*$/.test(value.toLowerCase())) {
             point.fields['__bool__' + key] = false;
             point.fields['__num__' + key] = 0;
         }
