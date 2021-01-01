@@ -122,12 +122,12 @@ function processKeyValue(value, key = 'value') {
         tmp[key + '__type'] = 'string';
         tmp[key + '__str'] = value;
 
-        if (/^\s*(true|on|enabled?)\s*$/.test(value.toLowerCase())) {
+        if (/^\s*(true|on(line)?|enabled?|ok|yes)\s*$/.test(value.toLowerCase())) {
             tmp[key + '__bool'] = true;
             tmp[key + '__num'] = 1;
         }
 
-        if (/^\s*(false|off|disabled?)\s*$/.test(value.toLowerCase())) {
+        if (/^\s*(false|off(line)?|disabled?|fail|no)\s*$/.test(value.toLowerCase())) {
             tmp[key + '__bool'] = false;
             tmp[key + '__num'] = 0;
         }
