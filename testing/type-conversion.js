@@ -33,7 +33,7 @@ Object.keys(point.fields).forEach(key => {
     
     // Provide type casted versions
     if (typeof point.fields[key] === 'boolean') {
-        point.fields['__num__' + key] = point.fields[key] ? 1 : 0;
+        point.fields[key + '__num'] = point.fields[key] ? 1 : 0;
     }
 
     if (typeof point.fields[key] === 'string') {
@@ -41,17 +41,17 @@ Object.keys(point.fields).forEach(key => {
         
         const numericValue = Number(value);
         if (!Number.isNaN(numericValue)) {
-            point.fields['__num__' + key] = numericValue;
+            point.fields[key + '__num'] = numericValue;
         }
 
         if (/^\s*(true|on|enable[d]{0,1})\s*$/.test(value.toLowerCase())) {
-            point.fields['__bool__' + key] = true;
-            point.fields['__num__' + key] = 1;
+            point.fields[key + '__bool'] = true;
+            point.fields[key + '__num'] = 1;
         }
         
         if (/^\s*(false|off|disable[d]{0,1})\s*$/.test(value.toLowerCase())) {
-            point.fields['__bool__' + key] = false;
-            point.fields['__num__' + key] = 0;
+            point.fields[key + '__bool'] = false;
+            point.fields[key + '__num'] = 0;
         }
     }
 //}
