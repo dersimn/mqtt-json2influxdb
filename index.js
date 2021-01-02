@@ -66,7 +66,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     point.tags = {};
     point.timestamp = receiveTimestamp;
 
-    if (typeof message === 'object') {
+    if (typeof message === 'object' && message !== null) {
         const flatMessage = flatten(message);
         let fieldSet = {};
 
