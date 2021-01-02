@@ -1,0 +1,19 @@
+/node_modules
+/test*
+/.nyc_output
+/contrib
+
+
+## Git
+/.git
+/.gitignore
+
+## Docker
+Dockerfile
+/.dockerignore
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
