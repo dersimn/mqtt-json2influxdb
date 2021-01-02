@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "xo && nyc mocha",
+    "test-only": "nyc mocha",
+    "coverage": "nyc report",
+    "lint": "xo",
+    "lint-fix": "xo --fix"
   },
   "repository": {
     "type": "git",
@@ -24,10 +28,20 @@
     "yargs": "^14.0.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint-plugin-mocha": "^8.0.0",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
     "xo": "^0.36.1"
   },
   "xo": {
     "space": 4,
+    "ignores": [
+      "testing/*"
+    ],
+    "plugins": [
+      "mocha"
+    ],
     "rules": {
       "camelcase": [
         "warn"
