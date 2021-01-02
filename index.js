@@ -3,7 +3,7 @@
 const pkg = require('./package.json');
 const log = require('yalm');
 const config = require('yargs')
-    .env('MQTT2INFLUX')
+    .env('MQSH2INFLUX')
     .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
     .describe('mqtt-url', 'mqtt broker url. See https://github.com/mqttjs/MQTT.js#connect-using-a-url')
