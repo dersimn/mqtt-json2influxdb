@@ -98,6 +98,9 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     } else if (packet.payload.length === 0) {
         point.fields = processKeyValue(null, 'val');
         point.fields.__payload__type = 'empty';
+    } else if (message === null) {
+        point.fields = processKeyValue(null, 'val');
+        point.fields.__payload__type = 'null';
     } else {
         point.fields = processKeyValue(message, 'val');
         point.fields.__payload__type = typeof message;
