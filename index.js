@@ -127,7 +127,7 @@ function processKeyValue(value, key = 'value') {
             tmp[key + '__num'] = 0;
         }
 
-        const numericValue = Number(value);
+        const numericValue = Number.parseFloat(value);
         if (!Number.isNaN(numericValue)) {
             tmp[key + '__num'] = numericValue;
         }
