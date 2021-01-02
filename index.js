@@ -94,7 +94,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         });
 
         point.fields = fieldSet;
-    } else if (message === '') {
+    } else if (packet.payload.length === 0) {
         point.fields = processKeyValue(null, 'val');
     } else {
         point.fields = processKeyValue(message, 'val');
