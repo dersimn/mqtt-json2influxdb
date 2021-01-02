@@ -30,7 +30,7 @@ const message = {
     stringOffline: 'offline'
 };
 
-function processKeyValue(value, key = 'value') {
+function processKeyValue(value, key = 'val') {
     const tmp = {};
     
     if (typeof value === 'boolean') {

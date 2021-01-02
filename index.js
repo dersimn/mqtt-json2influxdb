@@ -96,13 +96,13 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         point.fields = fieldSet;
         point.fields.__payload__type = Array.isArray(message) ? 'array' : 'object';
     } else if (packet.payload.length === 0) {
-        point.fields = processKeyValue(null, 'val');
+        point.fields = processKeyValue(null);
         point.fields.__payload__type = 'empty';
     } else if (message === null) {
-        point.fields = processKeyValue(null, 'val');
+        point.fields = processKeyValue(null);
         point.fields.__payload__type = 'null';
     } else {
-        point.fields = processKeyValue(message, 'val');
+        point.fields = processKeyValue(message);
         point.fields.__payload__type = typeof message;
     }
 
@@ -114,7 +114,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     });
 });
 
-function processKeyValue(value, key = 'value') {
+function processKeyValue(value, key = 'val') {
     const tmp = {};
 
     if (typeof value === 'boolean') {
