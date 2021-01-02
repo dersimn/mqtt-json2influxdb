@@ -71,11 +71,6 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         let fieldSet = {};
 
         // Process special keys
-        if (('val' in flatMessage) && !('value' in flatMessage)) {
-            flatMessage.value = flatMessage.val;
-            delete flatMessage.val;
-        }
-
         if ('ts' in flatMessage) {
             const ts = new Date(flatMessage.ts);
 
@@ -100,7 +95,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
 
         point.fields = fieldSet;
     } else {
-        point.fields = processKeyValue(message);
+        point.fields = processKeyValue(message, 'val');
     }
 
     // Write Datapoint
