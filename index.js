@@ -94,10 +94,13 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         });
 
         point.fields = fieldSet;
+        point.fields.__payload__type = Array.isArray(message) ? 'array' : 'object';
     } else if (packet.payload.length === 0) {
         point.fields = processKeyValue(null, 'val');
+        point.fields.__payload__type = 'empty';
     } else {
         point.fields = processKeyValue(message, 'val');
+        point.fields.__payload__type = typeof message;
     }
 
     // Write Datapoint
