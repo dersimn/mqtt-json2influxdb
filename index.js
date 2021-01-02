@@ -30,7 +30,7 @@ const config = require('yargs')
     .argv;
 const MqttSmarthome = require('mqtt-smarthome-connect');
 const Influx = require('influx');
-const flatten = require('flat');
+const processMessage = require('./lib/process-message.js');
 
 log.setLevel(config.verbosity);
 log.info(pkg.name + ' ' + pkg.version + ' starting');
@@ -61,50 +61,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     }
 
     // Build InfluxDB Datapoint
-    const point = {};
-    point.measurement = Influx.escape.measurement(topic);
-    point.tags = {};
-    point.timestamp = receiveTimestamp;
-
-    if (typeof message === 'object' && message !== null) {
-        const flatMessage = flatten(message);
-        let fieldSet = {};
-
-        // Process special keys
-        if ('ts' in flatMessage) {
-            const ts = new Date(flatMessage.ts);
-
-            if ((receiveTimestamp - ts) <= (5 * 1000)) {
-                point.tags.valid_timestamp = 'true';
-                point.timestamp = ts;
-                delete flatMessage.ts;
-            } else {
-                point.tags.valid_timestamp = 'false';
-            }
-        }
-
-        delete flatMessage.lc;
-
-        // Provide type casted versions
-        Object.keys(flatMessage).forEach(key => {
-            fieldSet = {
-                ...fieldSet,
-                ...processKeyValue(flatMessage[key], key)
-            };
-        });
-
-        point.fields = fieldSet;
-        point.fields.__payload__type = Array.isArray(message) ? 'array' : 'object';
-    } else if (packet.payload.length === 0) {
-        point.fields = processKeyValue(null);
-        point.fields.__payload__type = 'empty';
-    } else if (message === null) {
-        point.fields = processKeyValue(null);
-        point.fields.__payload__type = 'null';
-    } else {
-        point.fields = processKeyValue(message);
-        point.fields.__payload__type = typeof message;
-    }
+    const point = processMessage(topic, message, packet, receiveTimestamp);
 
     // Write Datapoint
     influx.writePoints([point]).then(() => {
@@ -113,38 +70,3 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
         log.warn('influx >', point.measurement, error.message);
     });
 });
-
-function processKeyValue(value, key = 'val') {
-    const tmp = {};
-
-    if (typeof value === 'boolean') {
-        tmp[key + '__type'] = 'boolean';
-        tmp[key + '__bool'] = value;
-        tmp[key + '__num'] = value ? 1 : 0;
-    } else if (typeof value === 'string') {
-        tmp[key + '__type'] = 'string';
-        tmp[key + '__str'] = value;
-
-        if (/^\s*(true|on(line)?|enabled?|ok|yes)\s*$/.test(value.toLowerCase())) {
-            tmp[key + '__bool'] = true;
-            tmp[key + '__num'] = 1;
-        }
-
-        if (/^\s*(false|off(line)?|disabled?|fail|no)\s*$/.test(value.toLowerCase())) {
-            tmp[key + '__bool'] = false;
-            tmp[key + '__num'] = 0;
-        }
-
-        const numericValue = Number.parseFloat(value);
-        if (!Number.isNaN(numericValue)) {
-            tmp[key + '__num'] = numericValue;
-        }
-    } else if (typeof value === 'number') {
-        tmp[key + '__type'] = 'number';
-        tmp[key + '__num'] = value;
-    } else if (value === null) {
-        tmp[key + '__type'] = 'null';
-    }
-
-    return tmp;
-}
