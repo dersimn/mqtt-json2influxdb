@@ -68,7 +68,7 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     }
 });
 
-setInterval(write, config.maxInterval * 1000);
+const writeInterval = setInterval(write, config.maxInterval * 1000);
 function write() {
     const chunk = pointBuffer.splice(0, config.chunkSize);
 
@@ -78,4 +78,26 @@ function write() {
     }).catch(error => {
         log.warn('influx >', chunk.length, error.message);
     });
+}
+
+process.on('SIGINT', () => {
+    log.info('received SIGINT');
+    stop();
+});
+process.on('SIGTERM', () => {
+    log.info('received SIGTERM');
+    stop();
+});
+async function stop() {
+    clearInterval(writeInterval);
+    mqtt.end();
+    try {
+        await influx.writePoints(pointBuffer);
+        log.debug('influx >', pointBuffer.length);
+    } catch (error) {
+        log.error('influx >', pointBuffer.length, error.message);
+    }
+
+    log.debug('exiting..');
+    process.exit(0);
 }
