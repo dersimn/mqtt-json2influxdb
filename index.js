@@ -11,9 +11,12 @@ const config = require('yargs')
     .describe('influxdb-port')
     .describe('influxdb-database')
     .describe('subscription', 'array of topics to subscribe').array('subscription')
+    .describe('chunk-size', 'maximum number of points to buffer before writing to InfluxDB')
+    .describe('max-interval', 'maximum time to wait if chunk size is not completely filled before writing to InfluxDB anyway')
     .alias({
         h: 'help',
         m: 'mqtt-url',
+        i: 'influxdb-host',
         v: 'verbosity'
     })
     .default({
