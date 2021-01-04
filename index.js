@@ -71,6 +71,9 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
 const writeInterval = setInterval(write, config.maxInterval * 1000);
 function write() {
     const chunk = pointBuffer.splice(0, config.chunkSize);
+    if (chunk.length === 0) {
+        return;
+    }
 
     // Write Datapoints
     influx.writePoints(chunk).then(() => {
