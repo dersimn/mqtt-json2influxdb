@@ -23,7 +23,9 @@ const config = require('yargs')
         'influxdb-database': 'mqtt',
         subscription: [
             '#'
-        ]
+        ],
+        'chunk-size': 5000,
+        'max-interval': 3
     })
     .version()
     .help('help')
@@ -35,6 +37,8 @@ const processMessage = require('./lib/process-message.js');
 log.setLevel(config.verbosity);
 log.info(pkg.name + ' ' + pkg.version + ' starting');
 log.debug('loaded config: ', config);
+
+const pointBuffer = [];
 
 const influx = new Influx.InfluxDB({
     host: config.influxdbHost,
@@ -57,11 +61,21 @@ mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
 
     // Build InfluxDB Datapoint
     const point = processMessage(topic, message, packet, receiveTimestamp);
+    pointBuffer.push(point);
 
-    // Write Datapoint
-    influx.writePoints([point]).then(() => {
-        log.debug('influx >', point.measurement);
-    }).catch(error => {
-        log.warn('influx >', point.measurement, error.message);
-    });
+    if (pointBuffer.length > config.chunkSize) {
+        setImmediate(write);
+    }
 });
+
+setInterval(write, config.maxInterval * 1000);
+function write() {
+    const chunk = pointBuffer.splice(0, config.chunkSize);
+
+    // Write Datapoints
+    influx.writePoints(chunk).then(() => {
+        log.debug('influx >', chunk.length);
+    }).catch(error => {
+        log.warn('influx >', chunk.length, error.message);
+    });
+}
