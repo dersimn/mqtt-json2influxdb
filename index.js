@@ -55,11 +55,6 @@ mqtt.on('connect', () => {
 mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     const receiveTimestamp = new Date();
 
-    if (packet.retain) {
-        // Skip retained messages on start
-        return;
-    }
-
     // Build InfluxDB Datapoint
     const point = processMessage(topic, message, packet, receiveTimestamp);
 
