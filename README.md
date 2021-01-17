@@ -77,6 +77,7 @@ Docker Hub deploy:
     docker buildx build --platform linux/amd64,linux/arm/v7 \
         -t dersimn/mqsh2influx \
         -t dersimn/mqsh2influx:2 \
+        -t dersimn/mqsh2influx:2.x \
         -t dersimn/mqsh2influx:2.x.x \
         --push .
 
