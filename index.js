@@ -7,9 +7,7 @@ const config = require('yargs')
     .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
     .describe('mqtt-url', 'mqtt broker url. See https://github.com/mqttjs/MQTT.js#connect-using-a-url')
-    .describe('influxdb-host')
-    .describe('influxdb-port')
-    .describe('influxdb-database')
+    .describe('influxdb-url', 'url to InfluxDB, e.g.: http://user:password@host:8086/database')
     .describe('subscription', 'array of topics to subscribe').array('subscription')
     .describe('chunk-size', 'maximum number of points to buffer before writing to InfluxDB')
     .describe('max-interval', 'maximum time to wait if chunk size is not completely filled before writing to InfluxDB anyway')
@@ -21,9 +19,7 @@ const config = require('yargs')
     })
     .default({
         'mqtt-url': 'mqtt://127.0.0.1',
-        'influxdb-host': '127.0.0.1',
-        'influxdb-port': 8086,
-        'influxdb-database': 'mqtt',
+        'influxdb-url': 'http://127.0.0.1:8086/mqtt',
         subscription: [
             '#'
         ],
@@ -43,11 +39,7 @@ log.debug('loaded config: ', config);
 
 const pointBuffer = [];
 
-const influx = new Influx.InfluxDB({
-    host: config.influxdbHost,
-    port: config.influxdbPort,
-    database: config.influxdbDatabase
-});
+const influx = new Influx.InfluxDB(config.influxdbUrl);
 
 log.info('mqtt trying to connect', config.mqttUrl);
 const mqtt = new MqttSmarthome(config.mqttUrl, {

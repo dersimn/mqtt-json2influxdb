@@ -8,9 +8,7 @@ Dumps MQTT messages to InfluxDB using InfluxQL (for InfluxDB < 2.0). Messages wi
 docker run -d --restart=always --name=mqsh2influx \
     dersimn/mqsh2influx \
     --mqtt-url mqtt://10.1.1.50 \
-    --influxdb-host 10.1.1.50 \
-    --influxdb-port 8086 \
-    --influxdb-database mqtt
+    --influxdb-url http://10.1.1.50:8086/mqtt
 ```
 
 Run `docker run --rm dersimn/mqsh2influx -h` for a list of options.
@@ -68,7 +66,7 @@ InfluxDB allows storing the basic data types: (null), bool, uint, int, float, st
 Docker development build:
 
     docker build -t mqsh2influx .
-    docker run --rm mqsh2influx -v debug --mqtt-url mqtt://host.docker.internal --influxdb-host host.docker.internal
+    docker run --rm mqsh2influx -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
 
 Docker Hub deploy:
 
