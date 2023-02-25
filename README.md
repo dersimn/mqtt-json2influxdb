@@ -85,15 +85,25 @@ MQTT:
 
     docker run -d --rm --name=mqtt -p 1883:1883 -p 9001:9001 -v "$(pwd)/contrib/mosquitto.conf":/mosquitto/config/mosquitto.conf:ro eclipse-mosquitto
 
-InfluxDB:
+InfluxDB v1:
 
     docker run -d --rm --name=influxdb -p 8086:8086 -e INFLUXDB_DB=mqtt influxdb:1.8-alpine
+    docker run --rm mqsh2influx -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
+
+InfluxDB v2:
+
+    docker run -d --rm --name influxdb-v2 -p 8086:8086 influxdb:alpine
+    docker exec influxdb-v2 influx setup -u myuser -p mypassword -t mytoken -o myorg -b mqtt -f
+    docker exec influxdb-v2 influx auth create --all-access --org myorg --token mytoken
+    docker exec influxdb-v2 influx bucket list
+    docker exec influxdb-v2 influx v1 auth create --username v1user --password v1password --org myorg --write-bucket <BUCKET_ID>
+    docker run --rm mqsh2influx -v debug --mqtt-url mqtt://v1user:v1password@host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
 
 Grafana:
 
     docker run -d --rm --name=grafana -p 3000:3000 -e "GF_SERVER_ROOT_URL=http://10.1.1.100:3000" -e "GF_USERS_ALLOW_SIGN_UP=false" -e "GF_USERS_DEFAULT_THEME=light" -e "GF_AUTH_ANONYMOUS_ENABLED=true" -e "GF_AUTH_BASIC_ENABLED=false" -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" grafana/grafana
 
-For a simple simulation environment consider also running:
+Generate Simulation Data:
 
     docker run -d --restart=always --name=logic -e "TZ=Europe/Berlin" -v "$(pwd)/contrib/scripts":/scripts:ro dersimn/mqtt-scripts:1 --url mqtt://host.docker.internal --dir /scripts
     docker rm -f logic
