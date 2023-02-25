@@ -83,16 +83,17 @@ Docker Hub deploy:
 
 MQTT:
 
-    docker run -d --name=mqtt -p 1883:1883 -p 9001:9001 -v "$(pwd)/contrib/mosquitto.conf":/mosquitto/config/mosquitto.conf:ro eclipse-mosquitto
+    docker run -d --rm --name=mqtt -p 1883:1883 -p 9001:9001 -v "$(pwd)/contrib/mosquitto.conf":/mosquitto/config/mosquitto.conf:ro eclipse-mosquitto
 
 InfluxDB:
 
-    docker run -d --name=influxdb -p 8086:8086 -e INFLUXDB_DB=mqtt influxdb:1.8-alpine
+    docker run -d --rm --name=influxdb -p 8086:8086 -e INFLUXDB_DB=mqtt influxdb:1.8-alpine
 
 Grafana:
 
-    docker run -d --name=grafana -p 3000:3000 -e "GF_SERVER_ROOT_URL=http://10.1.1.100:3000" -e "GF_USERS_ALLOW_SIGN_UP=false" -e "GF_USERS_DEFAULT_THEME=light" -e "GF_AUTH_ANONYMOUS_ENABLED=true" -e "GF_AUTH_BASIC_ENABLED=false" -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" grafana/grafana
+    docker run -d --rm --name=grafana -p 3000:3000 -e "GF_SERVER_ROOT_URL=http://10.1.1.100:3000" -e "GF_USERS_ALLOW_SIGN_UP=false" -e "GF_USERS_DEFAULT_THEME=light" -e "GF_AUTH_ANONYMOUS_ENABLED=true" -e "GF_AUTH_BASIC_ENABLED=false" -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" grafana/grafana
 
 For a simple simulation environment consider also running:
 
     docker run -d --restart=always --name=logic -e "TZ=Europe/Berlin" -v "$(pwd)/contrib/scripts":/scripts:ro dersimn/mqtt-scripts:1 --url mqtt://host.docker.internal --dir /scripts
+    docker rm -f logic
