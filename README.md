@@ -5,13 +5,13 @@ Dumps MQTT messages to InfluxDB using InfluxQL (for InfluxDB < 2.0). Messages wi
 ### Docker
 
 ```
-docker run -d --restart=always --name=mqsh2influx \
-    dersimn/mqsh2influx \
+docker run -d --restart=always --name=mqtt-json2influxdb \
+    dersimn/mqtt-json2influxdb \
     --mqtt-url mqtt://10.1.1.50 \
     --influxdb-url http://10.1.1.50:8086/mqtt
 ```
 
-Run `docker run --rm dersimn/mqsh2influx -h` for a list of options.
+Run `docker run --rm dersimn/mqtt-json2influxdb -h` for a list of options.
 
 ## MQTT Smarthome → InfluxDB Type Conversions 
 
@@ -20,12 +20,13 @@ InfluxDB allows storing the basic data types: (null), bool, uint, int, float, st
 
 ### JSON-compatible Strings as Payload
 
-    null → val__type = "null"
+    null → __type = "null"
 
-    42 → val__type = "number"
-         val__number = 42
+    42 → __type = "number"
+         __number = 42
 
-    [42, "foo", 3.14, false] → 0__type = "number"
+    [42, "foo", 3.14, false] → __type = "array"
+                               0__type = "number"
                                0__number = 42
                                1__type = "string"
                                1__string = "foo"
@@ -35,27 +36,22 @@ InfluxDB allows storing the basic data types: (null), bool, uint, int, float, st
                                3__boolean = false
                                3__number = 0
 
-    {"foo": "bar"} → foo__type = "string"
-                   → foo__string = "bar"
+    {"foo": "bar"} → __type = "object"
+                     foo__type = "string"
+                     foo__string = "bar"
 
 ### Unquoted Strings
 
-    foo bar → val__type = "string"
-              val__string = "foo bar"
+    foo bar → __type = "string"
+              __string = "foo bar"
 
 ### Empty Payload
 
-    <zero bytes payload> → val__type = "null"
-
-### MQTT Smarthome specific JSON keys
-
-- `ts` will be treated as timestamp if the difference is < 5s.  
-  Otherwise we'll store `ts` as field key and tag it with `valid_timestamp = false` for debugging.
-- `lc` will be removed.
+    <zero bytes payload> → __type = "null"
 
 ### Additional Type Conversions
 
-- `boolean` → `number` (`0`, `1`), because Grafana can't display boolean values in a graph using InfluxQL (it only works using Flux + InfluxDB 2.x in the future).
+- `boolean` → `number` (`0`, `1`), because Grafana can't display boolean values in a graph using InfluxQL (it only works using Flux + InfluxDB 2.x).
 - We also try to convert `string` → `number`.
 - Special strings like `yes`/`no`, `on`/`off`, … will be converted to boolean values.
 
@@ -65,18 +61,19 @@ InfluxDB allows storing the basic data types: (null), bool, uint, int, float, st
 
 Docker development build:
 
-    docker build -t mqsh2influx .
-    docker run --rm mqsh2influx -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
+    docker build -t mqtt-json2influxdb .
+    docker run --rm mqtt-json2influxdb -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
 
 Docker Hub deploy:
 
     docker buildx create --name mybuilder
     docker buildx use mybuilder
-    docker buildx build --platform linux/amd64,linux/arm/v7 \
-        -t dersimn/mqsh2influx \
-        -t dersimn/mqsh2influx:2 \
-        -t dersimn/mqsh2influx:2.x \
-        -t dersimn/mqsh2influx:2.x.x \
+    docker buildx build \
+        --platform linux/amd64,linux/arm/v7 \
+        -t dersimn/mqtt-json2influxdb \
+        -t dersimn/mqtt-json2influxdb:2 \
+        -t dersimn/mqtt-json2influxdb:2.x \
+        -t dersimn/mqtt-json2influxdb:2.x.x \
         --push .
 
 ### Testing
@@ -88,7 +85,7 @@ MQTT:
 InfluxDB v1:
 
     docker run -d --rm --name=influxdb -p 8086:8086 -e INFLUXDB_DB=mqtt influxdb:1.8-alpine
-    docker run --rm mqsh2influx -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
+    docker run --rm mqtt-json2influxdb -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
 
 InfluxDB v2:
 
@@ -97,11 +94,11 @@ InfluxDB v2:
     docker exec influxdb-v2 influx auth create --all-access --org myorg --token mytoken
     docker exec influxdb-v2 influx bucket list
     docker exec influxdb-v2 influx v1 auth create --username v1user --password v1password --org myorg --write-bucket <BUCKET_ID>
-    docker run --rm mqsh2influx -v debug --mqtt-url mqtt://v1user:v1password@host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
+    docker run --rm mqtt-json2influxdb -v debug --mqtt-url mqtt://v1user:v1password@host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
 
 Grafana:
 
-    docker run -d --rm --name=grafana -p 3000:3000 -e "GF_SERVER_ROOT_URL=http://10.1.1.100:3000" -e "GF_USERS_ALLOW_SIGN_UP=false" -e "GF_USERS_DEFAULT_THEME=light" -e "GF_AUTH_ANONYMOUS_ENABLED=true" -e "GF_AUTH_BASIC_ENABLED=false" -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" grafana/grafana
+    docker run -d --rm --name=grafana -p 3000:3000 -e "GF_SERVER_ROOT_URL=http://localhost:3000" -e "GF_USERS_ALLOW_SIGN_UP=false" -e "GF_USERS_DEFAULT_THEME=light" -e "GF_AUTH_ANONYMOUS_ENABLED=true" -e "GF_AUTH_BASIC_ENABLED=false" -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" grafana/grafana
 
 Generate Simulation Data:
 

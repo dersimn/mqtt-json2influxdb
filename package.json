@@ -1,6 +1,6 @@
 {
-  "name": "mqsh2influx",
-  "version": "3.0.1",
+  "name": "mqtt-json2influxdb",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/dersimn/mqsh2influx.git"
+    "url": "git+ssh://git@github.com/dersimn/mqtt-json2influxdb.git"
   },
   "author": "Simon Christmann <simon@christmann.email>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/dersimn/mqsh2influx/issues"
+    "url": "https://github.com/dersimn/mqtt-json2influxdb/issues"
   },
-  "homepage": "https://github.com/dersimn/mqsh2influx#readme",
+  "homepage": "https://github.com/dersimn/mqtt-json2influxdb#readme",
   "dependencies": {
     "flat": "^5.0.2",
     "influx": "^5.9.3",

@@ -23,7 +23,7 @@ describe('Chai Sanity Test', function () {
 describe('Process Message', function () {
     describe('Parse primitive Values', function () {
         const tests = [
-            {in: null, expected: {val__type: 'null', __payload__type: 'null'}}
+            {in: null, expected: {__type: 'null'}}
         ];
 
         tests.forEach(function (test) {

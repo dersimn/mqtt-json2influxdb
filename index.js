@@ -3,7 +3,7 @@
 const pkg = require('./package.json');
 const log = require('yalm');
 const config = require('yargs')
-    .env('MQSH2INFLUX')
+    .env(pkg.name.replace(/[^a-zA-Z\d]/, '_').toUpperCase())
     .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
     .describe('mqtt-url', 'mqtt broker url. See https://github.com/mqttjs/MQTT.js#connect-using-a-url')
@@ -18,8 +18,8 @@ const config = require('yargs')
         v: 'verbosity'
     })
     .default({
-        'mqtt-url': 'mqtt://127.0.0.1',
-        'influxdb-url': 'http://127.0.0.1:8086/mqtt',
+        'mqtt-url': 'mqtt://host.docker.internal',
+        'influxdb-url': 'http://host.docker.internal:8086/mqtt',
         subscription: [
             '#'
         ],
