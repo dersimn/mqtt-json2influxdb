@@ -37,7 +37,8 @@
   "xo": {
     "space": 4,
     "ignores": [
-      "testing/*"
+      "testing/*",
+      "contrib/*"
     ],
     "plugins": [
       "mocha"
@@ -52,11 +53,15 @@
       "unicorn/prevent-abbreviations": [
         "warn",
         {
-          "whitelist": {
+          "allowList": {
             "tmp": true,
-            "obj": true
+            "obj": true,
+            "pkg": true
           }
         }
+      ],
+      "unicorn/prefer-module": [
+        "warn"
       ]
     }
   }
