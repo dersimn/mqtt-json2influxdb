@@ -27,8 +27,8 @@ describe('Process Message', function () {
             {
                 in: null,
                 expected: {
-                    __type: 'json',
-                    payload__type: 'null'
+                    '__type': 'json',
+                    'payload__type': 'null'
                 }
             },
 
@@ -36,17 +36,17 @@ describe('Process Message', function () {
             {
                 in: 42,
                 expected: {
-                    __type: 'json',
-                    payload__type: 'number',
-                    payload__number: 42
+                    '__type': 'json',
+                    'payload__type': 'number',
+                    'payload__number': 42
                 }
             },
             {
                 in: 3.1415,
                 expected: {
-                    __type: 'json',
-                    payload__type: 'number',
-                    payload__number: 3.1415
+                    '__type': 'json',
+                    'payload__type': 'number',
+                    'payload__number': 3.1415
                 }
             },
 
@@ -54,9 +54,9 @@ describe('Process Message', function () {
             {
                 in: 'foo',
                 expected: {
-                    __type: 'json',
-                    payload__type: 'string',
-                    payload__string: 'foo'
+                    '__type': 'json',
+                    'payload__type': 'string',
+                    'payload__string': 'foo'
                 }
             },
 
@@ -66,8 +66,8 @@ describe('Process Message', function () {
                     foo: 'bar'
                 },
                 expected: {
-                    __type: 'json',
-                    payload__type: 'object',
+                    '__type': 'json',
+                    'payload__type': 'object',
                     'payload.foo__type': 'string',
                     'payload.foo__string': 'bar'
                 }
@@ -77,8 +77,8 @@ describe('Process Message', function () {
                     mynull: null
                 },
                 expected: {
-                    __type: 'json',
-                    payload__type: 'object',
+                    '__type': 'json',
+                    'payload__type': 'object',
                     'payload.mynull__type': 'null'
                 }
             },
@@ -89,8 +89,8 @@ describe('Process Message', function () {
                     }
                 },
                 expected: {
-                    __type: 'json',
-                    payload__type: 'object',
+                    '__type': 'json',
+                    'payload__type': 'object',
                     'payload.foo.bar__type': 'string',
                     'payload.foo.bar__string': 'baz'
                 }
@@ -104,8 +104,8 @@ describe('Process Message', function () {
                     3
                 ],
                 expected: {
-                    __type: 'json',
-                    payload__type: 'array',
+                    '__type': 'json',
+                    'payload__type': 'array',
                     'payload.0__type': 'number',
                     'payload.1__type': 'number',
                     'payload.2__type': 'number',
@@ -120,8 +120,8 @@ describe('Process Message', function () {
                     null
                 ],
                 expected: {
-                    __type: 'json',
-                    payload__type: 'array',
+                    '__type': 'json',
+                    'payload__type': 'array',
                     'payload.0__type': 'number',
                     'payload.1__type': 'null',
                     'payload.0__number': 1,
@@ -136,8 +136,8 @@ describe('Process Message', function () {
                     ]
                 ],
                 expected: {
-                    __type: 'json',
-                    payload__type: 'array',
+                    '__type': 'json',
+                    'payload__type': 'array',
                     'payload.0__type': 'number',
                     'payload.1.0__type': 'number',
                     'payload.1.1__type': 'number',
