@@ -27,7 +27,6 @@ describe('Process Message', function () {
             {
                 in: 'null',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'null'
                 }
             },
@@ -36,7 +35,6 @@ describe('Process Message', function () {
             {
                 in: 'true',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'boolean',
                     'payload__boolean': true,
                     'payload__number': 1
@@ -45,7 +43,6 @@ describe('Process Message', function () {
             {
                 in: 'false',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'boolean',
                     'payload__boolean': false,
                     'payload__number': 0
@@ -56,7 +53,6 @@ describe('Process Message', function () {
             {
                 in: '42',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'number',
                     'payload__number': 42
                 }
@@ -64,7 +60,6 @@ describe('Process Message', function () {
             {
                 in: '3.1415',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'number',
                     'payload__number': 3.1415
                 }
@@ -74,7 +69,6 @@ describe('Process Message', function () {
             {
                 in: '"foo"',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'string',
                     'payload__string': 'foo'
                 }
@@ -82,15 +76,23 @@ describe('Process Message', function () {
             {
                 in: 'foo',
                 expected: {
-                    '__type': 'string',
-                    'payload__type': 'string',
+                    'payload__type': 'raw-string',
                     'payload__string': 'foo'
                 }
             },
             {
                 in: '',
                 expected: {
-                    '__type': 'empty',
+                    'payload__type': 'empty',
+                }
+            },
+            {
+                in: 'enabled',
+                expected: {
+                    'payload__type': 'raw-string',
+                    'payload__string': 'enabled',
+                    'payload__boolean': true,
+                    'payload__number': 1
                 }
             },
 
@@ -98,7 +100,6 @@ describe('Process Message', function () {
             {
                 in: '"42"',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'string',
                     'payload__string': '42',
                     'payload__number': 42
@@ -107,7 +108,6 @@ describe('Process Message', function () {
             {
                 in: '"3.1415"',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'string',
                     'payload__string': '3.1415',
                     'payload__number': 3.1415
@@ -118,7 +118,6 @@ describe('Process Message', function () {
             {
                 in: '"true"',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'string',
                     'payload__string': 'true',
                     'payload__boolean': true,
@@ -128,7 +127,6 @@ describe('Process Message', function () {
             {
                 in: '"false"',
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'string',
                     'payload__string': 'false',
                     'payload__boolean': false,
@@ -154,7 +152,6 @@ describe('Process Message', function () {
             {
                 in: {},
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'object',
                 }
             },
@@ -163,7 +160,6 @@ describe('Process Message', function () {
                     foo: 'bar'
                 },
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'object',
                     'payload.foo__type': 'string',
                     'payload.foo__string': 'bar'
@@ -174,7 +170,6 @@ describe('Process Message', function () {
                     mynull: null
                 },
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'object',
                     'payload.mynull__type': 'null'
                 }
@@ -186,7 +181,6 @@ describe('Process Message', function () {
                     }
                 },
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'object',
                     'payload.foo.bar__type': 'string',
                     'payload.foo.bar__string': 'baz'
@@ -197,7 +191,6 @@ describe('Process Message', function () {
             {
                 in: [],
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'array',
                 }
             },
@@ -208,7 +201,6 @@ describe('Process Message', function () {
                     3
                 ],
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'array',
                     'payload.0__type': 'number',
                     'payload.1__type': 'number',
@@ -224,7 +216,6 @@ describe('Process Message', function () {
                     null
                 ],
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'array',
                     'payload.0__type': 'number',
                     'payload.1__type': 'null',
@@ -243,7 +234,6 @@ describe('Process Message', function () {
                     }
                 ],
                 expected: {
-                    '__type': 'json',
                     'payload__type': 'array',
                     'payload.0__type': 'number',
                     'payload.1.0__type': 'number',
