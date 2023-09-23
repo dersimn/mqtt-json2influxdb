@@ -5,6 +5,7 @@ const log = require('yalm');
 const config = require('yargs')
     .env(pkg.name.replace(/[^a-zA-Z\d]/, '_').toUpperCase())
     .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
+    .describe('name', '')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
     .describe('mqtt-url', 'mqtt broker url. See https://github.com/mqttjs/MQTT.js#connect-using-a-url')
     .describe('influxdb-url', 'url to InfluxDB, e.g.: http://user:password@host:8086/database')
@@ -18,6 +19,7 @@ const config = require('yargs')
         v: 'verbosity'
     })
     .default({
+        'name': 'dersimn/' + pkg.name,
         'mqtt-url': 'mqtt://host.docker.internal',
         'influxdb-url': 'http://host.docker.internal:8086/mqtt',
         subscription: [
@@ -43,11 +45,18 @@ const influx = new Influx.InfluxDB(config.influxdbUrl);
 
 log.info('mqtt trying to connect', config.mqttUrl);
 const client = mqtt.connect(config.mqttUrl, {
-    log: (...args) => {log.debug(...args)}
+    log: (...args) => {log.debug(...args)},
+    will: {
+        topic: config.name + '/online',
+        payload: 'false',
+        retain: true,
+    },
 });
 
 client.on('connect', () => {
     log.info('mqtt connected', config.mqttUrl);
+
+    client.publish(config.name + '/online', 'true', {retain: true});
 
     for (const topic of config.subscription) {
         log.debug('mqtt subscribing ' + topic);
@@ -114,7 +123,12 @@ process.on('SIGTERM', () => {
 });
 async function stop() {
     clearInterval(writeInterval);
+
+    // MQTT
+    client.publish(config.name + '/online', 'false', {retain: true});
     client.end();
+
+    // InfluxDB
     try {
         await influx.writePoints(pointBuffer);
         log.debug('influx >', pointBuffer.length);
