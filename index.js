@@ -29,7 +29,7 @@ const config = require('yargs')
     .version()
     .help('help')
     .argv;
-const MqttSmarthome = require('mqtt-smarthome-connect');
+const mqtt = require("mqtt");
 const Influx = require('influx');
 const processMessage = require('./lib/process-message.js');
 
@@ -42,17 +42,33 @@ const pointBuffer = [];
 const influx = new Influx.InfluxDB(config.influxdbUrl);
 
 log.info('mqtt trying to connect', config.mqttUrl);
-const mqtt = new MqttSmarthome(config.mqttUrl, {
-    logger: log
+const client = mqtt.connect(config.mqttUrl, {
+    log: (...args) => {log.debug(...args)}
 });
-mqtt.connect();
 
-mqtt.on('connect', () => {
+client.on('connect', () => {
     log.info('mqtt connected', config.mqttUrl);
+
+    for (const topic of config.subscription) {
+        log.info('mqtt subscribe ' + topic);
+        client.subscribe(topic);
+    };
 });
 
-mqtt.subscribe(config.subscription, (topic, message, wildcard, packet) => {
+client.on('close', () => {
+    log.warn('mqtt closed');
+});
+
+client.on('error', err => {
+    log.error('mqtt error', err.message);
+});
+
+client.on('message', (topic, payload, packet) => {
+//client.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     const receiveTimestamp = new Date();
+
+    // Try to parse
+    const message = parsePayload(payload);
 
     // Build InfluxDB Datapoint
     const point = processMessage(topic, message, packet, receiveTimestamp);
@@ -88,7 +104,7 @@ process.on('SIGTERM', () => {
 });
 async function stop() {
     clearInterval(writeInterval);
-    mqtt.end();
+    client.end();
     try {
         await influx.writePoints(pointBuffer);
         log.debug('influx >', pointBuffer.length);
@@ -98,4 +114,16 @@ async function stop() {
 
     log.debug('exiting..');
     process.exit(0);
+}
+
+function parsePayload(payload) {
+    try {
+        return JSON.parse(payload);
+    } catch {
+        try {
+            return String(payload);
+        } catch {
+            throw new Error('Unable to parse MQTT payload.');
+        }
+    }
 }

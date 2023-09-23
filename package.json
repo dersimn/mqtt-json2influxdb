@@ -23,7 +23,7 @@
   "dependencies": {
     "flat": "^5.0.2",
     "influx": "^5.9.3",
-    "mqtt-smarthome-connect": "latest",
+    "mqtt": "^5.0.5",
     "yalm": "^4.1.0",
     "yargs": "^17.7.2"
   },
