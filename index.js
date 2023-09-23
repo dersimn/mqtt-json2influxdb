@@ -50,8 +50,17 @@ client.on('connect', () => {
     log.info('mqtt connected', config.mqttUrl);
 
     for (const topic of config.subscription) {
-        log.info('mqtt subscribe ' + topic);
-        client.subscribe(topic);
+        log.debug('mqtt subscribing ' + topic);
+        client.subscribe(topic, {
+            rh: 2,  // Don't send retained messages at the time of the subscribe
+            nl: true,  // Don't send us back our own messages
+        }, (error, granted) => {
+            if (error) {
+                log.error('mqtt subscribe ' + topic, error);
+            } else {
+                log.info('mqtt subscribed ' + topic);
+            }
+        });
     };
 });
 
@@ -109,7 +118,7 @@ async function stop() {
         await influx.writePoints(pointBuffer);
         log.debug('influx >', pointBuffer.length);
     } catch (error) {
-        log.error('influx >', pointBuffer.length, error.message);
+        log.error('influx >', pointBuffer.length, error);
     }
 
     log.debug('exiting..');
