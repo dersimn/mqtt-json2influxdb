@@ -86,15 +86,6 @@ describe('Process Message', function () {
                     'payload__type': 'empty',
                 }
             },
-            {
-                in: 'enabled',
-                expected: {
-                    'payload__type': 'raw-string',
-                    'payload__string': 'enabled',
-                    'payload__boolean': true,
-                    'payload__number': 1
-                }
-            },
 
             // number in string
             {
@@ -129,6 +120,33 @@ describe('Process Message', function () {
                 expected: {
                     'payload__type': 'string',
                     'payload__string': 'false',
+                    'payload__boolean': false,
+                    'payload__number': 0
+                }
+            },
+            {
+                in: '" true"',
+                expected: {
+                    'payload__type': 'string',
+                    'payload__string': ' true',
+                    'payload__boolean': true,
+                    'payload__number': 1
+                }
+            },
+            {
+                in: 'enabled',
+                expected: {
+                    'payload__type': 'raw-string',
+                    'payload__string': 'enabled',
+                    'payload__boolean': true,
+                    'payload__number': 1
+                }
+            },
+            {
+                in: 'close',
+                expected: {
+                    'payload__type': 'raw-string',
+                    'payload__string': 'close',
                     'payload__boolean': false,
                     'payload__number': 0
                 }
