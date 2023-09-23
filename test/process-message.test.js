@@ -21,6 +21,71 @@ describe('Chai Sanity Test', function () {
 });
 
 describe('Process Message', function () {
+    describe('Parse raw string values', function () {
+        const tests = [
+            // null
+            {
+                in: 'null',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'null'
+                }
+            },
+
+            // number
+            {
+                in: '42',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'number',
+                    'payload__number': 42
+                }
+            },
+            {
+                in: '3.1415',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'number',
+                    'payload__number': 3.1415
+                }
+            },
+
+            // string
+            {
+                in: '"foo"',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'string',
+                    'payload__string': 'foo'
+                }
+            },
+            {
+                in: 'foo',
+                expected: {
+                    '__type': 'string',
+                    'payload__type': 'string',
+                    'payload__string': 'foo'
+                }
+            },
+            {
+                in: '',
+                expected: {
+                    '__type': 'empty',
+                }
+            },
+        ];
+
+        tests.forEach(function (test) {
+            it(`parses ${String(test.in)} → ${JSON.stringify(test.expected)}`, function () {
+                const point = processMessage('topic', {
+                    payload: Buffer.from(String(test.in)),
+                }, 123);
+
+                expect(point.fields).to.deep.equal(test.expected);
+            });
+        });
+    });
+
     describe('Parse JSON values', function () {
         const tests = [
             // null
