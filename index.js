@@ -51,6 +51,7 @@ const client = mqtt.connect(config.mqttUrl, {
         payload: 'false',
         retain: true,
     },
+    protocolVersion: 5,
 });
 
 client.on('connect', () => {
