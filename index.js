@@ -87,11 +87,9 @@ client.on('message', (topic, payload, packet) => {
 //client.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     const receiveTimestamp = new Date();
 
-    // Try to parse
-    const message = parsePayload(payload);
-
     // Build InfluxDB Datapoint
-    const point = processMessage(topic, message, packet, receiveTimestamp);
+    const point = processMessage(topic, packet, receiveTimestamp);
+    log.debug('point >', point);
     pointBuffer.push(point);
 
     if (pointBuffer.length > config.chunkSize) {
@@ -139,16 +137,4 @@ async function stop() {
 
     log.debug('exiting..');
     process.exit(0);
-}
-
-function parsePayload(payload) {
-    try {
-        return JSON.parse(payload);
-    } catch {
-        try {
-            return String(payload);
-        } catch {
-            throw new Error('Unable to parse MQTT payload.');
-        }
-    }
 }
