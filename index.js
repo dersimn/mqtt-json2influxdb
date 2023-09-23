@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const pkg = require('./package.json');
+const pkg = require('./package.json'); // eslint-disable-line import/order
+const process = require('node:process');
 const log = require('yalm');
 const config = require('yargs')
     .env(pkg.name.replace(/[^a-zA-Z\d]/, '_').toUpperCase())
@@ -16,22 +17,22 @@ const config = require('yargs')
         h: 'help',
         m: 'mqtt-url',
         i: 'influxdb-host',
-        v: 'verbosity'
+        v: 'verbosity',
     })
     .default({
-        'name': 'dersimn/' + pkg.name,
+        name: 'dersimn/' + pkg.name,
         'mqtt-url': 'mqtt://host.docker.internal',
         'influxdb-url': 'http://host.docker.internal:8086/mqtt',
         subscription: [
-            '#'
+            '#',
         ],
         'chunk-size': 5000,
-        'max-interval': 3
+        'max-interval': 3,
     })
     .version()
     .help('help')
     .argv;
-const mqtt = require("mqtt");
+const mqtt = require('mqtt');
 const Influx = require('influx');
 const processMessage = require('./lib/process-message.js');
 
@@ -45,7 +46,9 @@ const influx = new Influx.InfluxDB(config.influxdbUrl);
 
 log.info('mqtt trying to connect', config.mqttUrl);
 const client = mqtt.connect(config.mqttUrl, {
-    log: (...args) => {log.debug(...args)},
+    log(...args) {
+        log.debug(...args);
+    },
     will: {
         topic: config.name + '/online',
         payload: 'false',
@@ -62,17 +65,17 @@ client.on('connect', () => {
     for (const topic of config.subscription) {
         log.debug('mqtt subscribing ' + topic);
         client.subscribe(topic, {
-            rh: 2,  // Don't send retained messages at the time of the subscribe
-            nl: true,  // Don't send us back our own messages
-            rap: true,  // Received messages will keep the retain flag they were published with
-        }, (error, granted) => {
+            rh: 2, // Don't send retained messages at the time of the subscribe
+            nl: true, // Don't send us back our own messages
+            rap: true, // Received messages will keep the retain flag they were published with
+        }, error => {
             if (error) {
                 log.error('mqtt subscribe ' + topic, error);
             } else {
                 log.info('mqtt subscribed ' + topic);
             }
         });
-    };
+    }
 });
 
 client.on('close', () => {
@@ -84,7 +87,6 @@ client.on('error', err => {
 });
 
 client.on('message', (topic, payload, packet) => {
-//client.subscribe(config.subscription, (topic, message, wildcard, packet) => {
     const receiveTimestamp = new Date();
 
     // Build InfluxDB Datapoint

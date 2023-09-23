@@ -1,10 +1,12 @@
 /* eslint-env mocha */
 /* eslint-disable prefer-arrow-callback, no-unused-vars */
 /* eslint mocha/no-mocha-arrows: "error" */
+/* eslint quote-props: ["error", "consistent"] */
 
+const {Buffer} = require('node:buffer');
+const chai = require('chai');
 const processMessage = require('../lib/process-message.js');
 
-const chai = require('chai');
 const should = chai.should();
 const expect = chai.expect;
 const assert = chai.assert;
@@ -27,8 +29,8 @@ describe('Process Message', function () {
             {
                 in: 'null',
                 expected: {
-                    'payload__type': 'null'
-                }
+                    'payload__type': 'null',
+                },
             },
 
             // boolean
@@ -37,16 +39,16 @@ describe('Process Message', function () {
                 expected: {
                     'payload__type': 'boolean',
                     'payload__boolean': true,
-                    'payload__number': 1
-                }
+                    'payload__number': 1,
+                },
             },
             {
                 in: 'false',
                 expected: {
                     'payload__type': 'boolean',
                     'payload__boolean': false,
-                    'payload__number': 0
-                }
+                    'payload__number': 0,
+                },
             },
 
             // number
@@ -54,15 +56,15 @@ describe('Process Message', function () {
                 in: '42',
                 expected: {
                     'payload__type': 'number',
-                    'payload__number': 42
-                }
+                    'payload__number': 42,
+                },
             },
             {
                 in: '3.1415',
                 expected: {
                     'payload__type': 'number',
-                    'payload__number': 3.1415
-                }
+                    'payload__number': 3.1415,
+                },
             },
 
             // string
@@ -70,21 +72,21 @@ describe('Process Message', function () {
                 in: '"foo"',
                 expected: {
                     'payload__type': 'string',
-                    'payload__string': 'foo'
-                }
+                    'payload__string': 'foo',
+                },
             },
             {
                 in: 'foo',
                 expected: {
                     'payload__type': 'raw-string',
-                    'payload__string': 'foo'
-                }
+                    'payload__string': 'foo',
+                },
             },
             {
                 in: '',
                 expected: {
                     'payload__type': 'empty',
-                }
+                },
             },
 
             // number in string
@@ -93,16 +95,16 @@ describe('Process Message', function () {
                 expected: {
                     'payload__type': 'string',
                     'payload__string': '42',
-                    'payload__number': 42
-                }
+                    'payload__number': 42,
+                },
             },
             {
                 in: '"3.1415"',
                 expected: {
                     'payload__type': 'string',
                     'payload__string': '3.1415',
-                    'payload__number': 3.1415
-                }
+                    'payload__number': 3.1415,
+                },
             },
 
             // boolean in string
@@ -112,8 +114,8 @@ describe('Process Message', function () {
                     'payload__type': 'string',
                     'payload__string': 'true',
                     'payload__boolean': true,
-                    'payload__number': 1
-                }
+                    'payload__number': 1,
+                },
             },
             {
                 in: '"false"',
@@ -121,8 +123,8 @@ describe('Process Message', function () {
                     'payload__type': 'string',
                     'payload__string': 'false',
                     'payload__boolean': false,
-                    'payload__number': 0
-                }
+                    'payload__number': 0,
+                },
             },
             {
                 in: '" true"',
@@ -130,8 +132,8 @@ describe('Process Message', function () {
                     'payload__type': 'string',
                     'payload__string': ' true',
                     'payload__boolean': true,
-                    'payload__number': 1
-                }
+                    'payload__number': 1,
+                },
             },
             {
                 in: 'enabled',
@@ -139,8 +141,8 @@ describe('Process Message', function () {
                     'payload__type': 'raw-string',
                     'payload__string': 'enabled',
                     'payload__boolean': true,
-                    'payload__number': 1
-                }
+                    'payload__number': 1,
+                },
             },
             {
                 in: 'close',
@@ -148,12 +150,12 @@ describe('Process Message', function () {
                     'payload__type': 'raw-string',
                     'payload__string': 'close',
                     'payload__boolean': false,
-                    'payload__number': 0
-                }
+                    'payload__number': 0,
+                },
             },
         ];
 
-        tests.forEach(function (test) {
+        for (const test of tests) {
             it(`parses ${String(test.in)} → ${JSON.stringify(test.expected)}`, function () {
                 const point = processMessage('topic', {
                     payload: Buffer.from(String(test.in)),
@@ -161,7 +163,7 @@ describe('Process Message', function () {
 
                 expect(point.fields).to.deep.equal(test.expected);
             });
-        });
+        }
     });
 
     describe('Parse objects/arrays', function () {
@@ -171,38 +173,38 @@ describe('Process Message', function () {
                 in: {},
                 expected: {
                     'payload__type': 'object',
-                }
+                },
             },
             {
                 in: {
-                    foo: 'bar'
+                    foo: 'bar',
                 },
                 expected: {
                     'payload__type': 'object',
                     'payload.foo__type': 'string',
-                    'payload.foo__string': 'bar'
-                }
+                    'payload.foo__string': 'bar',
+                },
             },
             {
                 in: {
-                    mynull: null
+                    mynull: null,
                 },
                 expected: {
                     'payload__type': 'object',
-                    'payload.mynull__type': 'null'
-                }
+                    'payload.mynull__type': 'null',
+                },
             },
             {
                 in: {
                     foo: {
-                        bar: 'baz'
-                    }
+                        bar: 'baz',
+                    },
                 },
                 expected: {
                     'payload__type': 'object',
                     'payload.foo.bar__type': 'string',
-                    'payload.foo.bar__string': 'baz'
-                }
+                    'payload.foo.bar__string': 'baz',
+                },
             },
 
             // array
@@ -210,13 +212,13 @@ describe('Process Message', function () {
                 in: [],
                 expected: {
                     'payload__type': 'array',
-                }
+                },
             },
             {
                 in: [
                     1,
                     2,
-                    3
+                    3,
                 ],
                 expected: {
                     'payload__type': 'array',
@@ -226,30 +228,30 @@ describe('Process Message', function () {
                     'payload.0__number': 1,
                     'payload.1__number': 2,
                     'payload.2__number': 3,
-                }
+                },
             },
             {
                 in: [
                     1,
-                    null
+                    null,
                 ],
                 expected: {
                     'payload__type': 'array',
                     'payload.0__type': 'number',
                     'payload.1__type': 'null',
                     'payload.0__number': 1,
-                }
+                },
             },
             {
                 in: [
                     1,
                     [
                         2,
-                        3
+                        3,
                     ],
                     {
-                        foo: 'bar'
-                    }
+                        foo: 'bar',
+                    },
                 ],
                 expected: {
                     'payload__type': 'array',
@@ -261,11 +263,11 @@ describe('Process Message', function () {
                     'payload.1.0__number': 2,
                     'payload.1.1__number': 3,
                     'payload.2.foo__string': 'bar',
-                }
+                },
             },
         ];
 
-        tests.forEach(function (test) {
+        for (const test of tests) {
             it(`parses ${JSON.stringify(test.in)} → ${JSON.stringify(test.expected)}`, function () {
                 const point = processMessage('topic', {
                     payload: Buffer.from(JSON.stringify(test.in)),
@@ -273,6 +275,6 @@ describe('Process Message', function () {
 
                 expect(point.fields).to.deep.equal(test.expected);
             });
-        });
+        }
     });
 });
