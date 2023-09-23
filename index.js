@@ -54,6 +54,7 @@ client.on('connect', () => {
         client.subscribe(topic, {
             rh: 2,  // Don't send retained messages at the time of the subscribe
             nl: true,  // Don't send us back our own messages
+            rap: true,  // Received messages will keep the retain flag they were published with
         }, (error, granted) => {
             if (error) {
                 log.error('mqtt subscribe ' + topic, error);
