@@ -21,7 +21,7 @@ describe('Chai Sanity Test', function () {
 });
 
 describe('Process Message', function () {
-    describe('Parse raw string values', function () {
+    describe('Parse simple values', function () {
         const tests = [
             // null
             {
@@ -29,6 +29,26 @@ describe('Process Message', function () {
                 expected: {
                     '__type': 'json',
                     'payload__type': 'null'
+                }
+            },
+
+            // boolean
+            {
+                in: 'true',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'boolean',
+                    'payload__boolean': true,
+                    'payload__number': 1
+                }
+            },
+            {
+                in: 'false',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'boolean',
+                    'payload__boolean': false,
+                    'payload__number': 0
                 }
             },
 
@@ -73,6 +93,48 @@ describe('Process Message', function () {
                     '__type': 'empty',
                 }
             },
+
+            // number in string
+            {
+                in: '"42"',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'string',
+                    'payload__string': '42',
+                    'payload__number': 42
+                }
+            },
+            {
+                in: '"3.1415"',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'string',
+                    'payload__string': '3.1415',
+                    'payload__number': 3.1415
+                }
+            },
+
+            // boolean in string
+            {
+                in: '"true"',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'string',
+                    'payload__string': 'true',
+                    'payload__boolean': true,
+                    'payload__number': 1
+                }
+            },
+            {
+                in: '"false"',
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'string',
+                    'payload__string': 'false',
+                    'payload__boolean': false,
+                    'payload__number': 0
+                }
+            },
         ];
 
         tests.forEach(function (test) {
@@ -86,46 +148,16 @@ describe('Process Message', function () {
         });
     });
 
-    describe('Parse JSON values', function () {
+    describe('Parse objects/arrays', function () {
         const tests = [
-            // null
-            {
-                in: null,
-                expected: {
-                    '__type': 'json',
-                    'payload__type': 'null'
-                }
-            },
-
-            // number
-            {
-                in: 42,
-                expected: {
-                    '__type': 'json',
-                    'payload__type': 'number',
-                    'payload__number': 42
-                }
-            },
-            {
-                in: 3.1415,
-                expected: {
-                    '__type': 'json',
-                    'payload__type': 'number',
-                    'payload__number': 3.1415
-                }
-            },
-
-            // string
-            {
-                in: 'foo',
-                expected: {
-                    '__type': 'json',
-                    'payload__type': 'string',
-                    'payload__string': 'foo'
-                }
-            },
-
             // object
+            {
+                in: {},
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'object',
+                }
+            },
             {
                 in: {
                     foo: 'bar'
@@ -163,6 +195,13 @@ describe('Process Message', function () {
 
             // array
             {
+                in: [],
+                expected: {
+                    '__type': 'json',
+                    'payload__type': 'array',
+                }
+            },
+            {
                 in: [
                     1,
                     2,
@@ -198,7 +237,10 @@ describe('Process Message', function () {
                     [
                         2,
                         3
-                    ]
+                    ],
+                    {
+                        foo: 'bar'
+                    }
                 ],
                 expected: {
                     '__type': 'json',
@@ -206,9 +248,11 @@ describe('Process Message', function () {
                     'payload.0__type': 'number',
                     'payload.1.0__type': 'number',
                     'payload.1.1__type': 'number',
+                    'payload.2.foo__type': 'string',
                     'payload.0__number': 1,
                     'payload.1.0__number': 2,
                     'payload.1.1__number': 3,
+                    'payload.2.foo__string': 'bar',
                 }
             },
         ];
