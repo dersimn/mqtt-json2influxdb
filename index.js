@@ -4,7 +4,7 @@ const pkg = require('./package.json'); // eslint-disable-line import/order
 const process = require('node:process');
 const log = require('yalm');
 const config = require('yargs')
-    .env(pkg.name.replace(/[^a-zA-Z\d]/, '_').toUpperCase())
+    .env(pkg.name.replace(/[^a-zA-Z\d]/, '').toUpperCase())
     .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
     .describe('mqtt-prefix', 'prefix for every MQTT message that this tool publishes (currently only one online/offline message for debugging')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')

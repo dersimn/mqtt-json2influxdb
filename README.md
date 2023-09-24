@@ -17,6 +17,20 @@ docker run -d \
 
 Run `docker run --rm dersimn/mqtt-json2influxdb -h` for a list of options.
 
+### ENVs
+
+If you prefer configuring the script by ENVs the upper command can also be written as:
+
+```
+docker run -d \
+    --restart=always \
+    --name=mqtt-json2influxdb \
+    --add-host=host.docker.internal:host-gateway \
+    -e MQTTJSON2INFLUXDB_MQTT_URL=mqtt://host.docker.internal \
+    -e MQTTJSON2INFLUXDB_INFLUXDB_URL=http://username:password@host.docker.internal:8086/databasename \
+    dersimn/mqtt-json2influxdb
+```
+
 # InfluxDB Type Conversions 
 
 MQTT allows sending all types of binary data, but most users use it to send UTF-8 encoded strings or JSON strings.  
