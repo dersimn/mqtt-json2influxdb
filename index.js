@@ -6,7 +6,7 @@ const log = require('yalm');
 const config = require('yargs')
     .env(pkg.name.replace(/[^a-zA-Z\d]/, '_').toUpperCase())
     .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
-    .describe('name', '')
+    .describe('mqtt-prefix', 'prefix for every MQTT message that this tool publishes (currently only one online/offline message for debugging')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
     .describe('mqtt-url', 'mqtt broker url. See https://github.com/mqttjs/MQTT.js#connect-using-a-url')
     .describe('influxdb-url', 'url to InfluxDB, e.g.: http://user:password@host:8086/database')
@@ -20,7 +20,7 @@ const config = require('yargs')
         v: 'verbosity',
     })
     .default({
-        name: 'dersimn/' + pkg.name,
+        'mqtt-prefix': 'dersimn/' + pkg.name,
         'mqtt-url': 'mqtt://host.docker.internal',
         'influxdb-url': 'http://host.docker.internal:8086/mqtt',
         subscription: [
@@ -37,7 +37,7 @@ const Influx = require('influx');
 const processMessage = require('./lib/process-message.js');
 
 log.setLevel(config.verbosity);
-log.info(pkg.name + ' ' + pkg.version + ' starting');
+log.info(pkg.mqttPrefix + ' ' + pkg.version + ' starting');
 log.debug('loaded config: ', config);
 
 const pointBuffer = [];
@@ -50,7 +50,7 @@ const client = mqtt.connect(config.mqttUrl, {
         log.debug(...args);
     },
     will: {
-        topic: config.name + '/online',
+        topic: config.mqttPrefix + '/online',
         payload: 'false',
         retain: true,
     },
@@ -60,7 +60,7 @@ const client = mqtt.connect(config.mqttUrl, {
 client.on('connect', () => {
     log.info('mqtt connected', config.mqttUrl);
 
-    client.publish(config.name + '/online', 'true', {retain: true});
+    client.publish(config.mqttPrefix + '/online', 'true', {retain: true});
 
     for (const topic of config.subscription) {
         log.debug('mqtt subscribing ' + topic);
@@ -126,7 +126,7 @@ async function stop() {
     clearInterval(writeInterval);
 
     // MQTT
-    client.publish(config.name + '/online', 'false', {retain: true});
+    client.publish(config.mqttPrefix + '/online', 'false', {retain: true});
     client.end();
 
     // InfluxDB
