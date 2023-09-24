@@ -129,19 +129,33 @@ MQTT:
 
     docker run -d --rm --name=mqtt -p 1883:1883 -p 9001:9001 -v "$(pwd)/contrib/mosquitto.conf":/mosquitto/config/mosquitto.conf:ro eclipse-mosquitto
 
-InfluxDB v1:
+InfluxDB v1 (no auth enabled by default):
 
     docker run -d --rm --name=influxdb -p 8086:8086 -e INFLUXDB_DB=mqtt influxdb:1.8-alpine
     docker run --rm mqtt-json2influxdb -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
 
-InfluxDB v2:
+InfluxDB v2 (auth for v1 API must be created manually):
 
-    docker run -d --rm --name influxdb-v2 -p 8086:8086 influxdb:alpine
-    docker exec influxdb-v2 influx setup -u myuser -p mypassword -t mytoken -o myorg -b mqtt -f
-    docker exec influxdb-v2 influx auth create --all-access --org myorg --token mytoken
-    docker exec influxdb-v2 influx bucket list
-    docker exec influxdb-v2 influx v1 auth create --username v1user --password v1password --org myorg --write-bucket <BUCKET_ID>
-    docker run --rm mqtt-json2influxdb -v debug --mqtt-url mqtt://v1user:v1password@host.docker.internal --influxdb-url http://host.docker.internal:8086/mqtt
+    docker run -d --rm --name influxdb2 \
+        -e DOCKER_INFLUXDB_INIT_MODE=setup \
+        -e DOCKER_INFLUXDB_INIT_USERNAME=myuser \
+        -e DOCKER_INFLUXDB_INIT_PASSWORD=mypassword \
+        -e DOCKER_INFLUXDB_INIT_ORG=myorg \
+        -e DOCKER_INFLUXDB_INIT_BUCKET=mybucket \
+        -e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken \
+        influxdb:alpine
+
+    docker exec -it influxdb2
+    influx bucket list
+    influx v1 auth create \
+        --username v1user \
+        --password v1password \
+        --org myorg \
+        --token mytoken \
+        --read-bucket <bucket id from `influx bucket list`> \
+        --write-bucket <bucket id from `influx bucket list`>
+
+    docker run --rm mqtt-json2influxdb -v debug --mqtt-url mqtt://host.docker.internal --influxdb-url http://v1user:v1password@host.docker.internal:8086/mqtt
 
 Grafana:
 
