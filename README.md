@@ -44,7 +44,7 @@ If a larger JSON object is sent via MQTT, multiple field-key/value pairs are wri
 
 ## Example conversions
 
-    null → payload__type = null
+    null → payload__type = "null"
 
     <zero bytes payload> → payload__type = "empty"
 
@@ -81,6 +81,20 @@ _Note:_ A quoted string `"42"` will be interpreted as JSON-string, a `42` (witho
     {"foo": "bar"} → payload__type = "object"
                      payload.foo__type = "string"
                      payload.foo__string = "bar"
+
+    {"foo": {"bar": "baz"}} → payload__type = "object"
+                              payload.foo.bar__type = "string"
+                              payload.foo.bar__string = "baz"
+
+    [1,[2,3,],{"foo": "bar"}] → payload__type = "array"
+                                payload.0__type = "number"
+                                payload.0__number = 1
+                                payload.1.0__type = "number"
+                                payload.1.0__number = 2
+                                payload.1.1__type = "number"
+                                payload.1.1__number = 3
+                                payload.2.foo__type = "string"
+                                payload.2.foo__string = "bar"
 
 ## Additional Type Conversions
 
