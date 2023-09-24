@@ -1,63 +1,82 @@
-Dumps MQTT messages to InfluxDB using InfluxQL (for InfluxDB < 2.0). Messages will be parsed according to a loose implementation of the MQTT Smarthome convention (see below).
+Dumps MQTT messages to InfluxDB using InfluxQL (for InfluxDB < 2.0).  
+It tries to parse JSON formatted messages with a fallback for raw strings (e.g. unquoted strings sent over MQTT).
 
-## Usage
+# Usage
 
-### Docker
+## Docker
 
 ```
-docker run -d --restart=always --name=mqtt-json2influxdb \
+docker run -d \
+    --restart=always \
+    --name=mqtt-json2influxdb \
+    --add-host=host.docker.internal:host-gateway \
     dersimn/mqtt-json2influxdb \
-    --mqtt-url mqtt://10.1.1.50 \
-    --influxdb-url http://10.1.1.50:8086/mqtt
+        --mqtt-url mqtt://host.docker.internal \
+        --influxdb-url http://username:password@host.docker.internal:8086/databasename
 ```
 
 Run `docker run --rm dersimn/mqtt-json2influxdb -h` for a list of options.
 
-## MQTT Smarthome → InfluxDB Type Conversions 
+# InfluxDB Type Conversions 
 
-MQTT Smarthome allows JSON, String and empty payloads (null).  
-InfluxDB allows storing the basic data types: (null), bool, uint, int, float, string, bytes. 
+MQTT allows sending all types of binary data, but most users use it to send UTF-8 encoded strings or JSON strings.  
+The InfluxDB line protocol (used by InfluxDB v1) allows storing the basic data types: [floats, integers, strings, or Booleans](https://docs.influxdata.com/influxdb/v1/write_protocols/line_protocol_reference/#syntax-description) - but not objects or arrays.  
 
-### JSON-compatible Strings as Payload
+A big problem with InfluxDB is that you can't switch data types. A field key once filled with an integer cannot be used to store a string afterwards. Therefore the data type is appended behind each field key and sometimes it is also tried to convert the data types. What I've tried to do here is to find a format that works in most cases and that allows you to store everything in an MQTT message without having to think too much.
 
-    null → __type = "null"
+For example, if you send the string `42` (without quotes) to topic `test/topic`, it can be interpreted as a JSON formatted number, so it will be written to InfluxDB: measurement=`test/topic`, field-key1=`payload__integer`, field-value1=`42` (as float). Because JSON does not distinguish between float and integer, JSON-numbers are always stored as InfluxDB-float.
 
-    42 → __type = "number"
-         __number = 42
+If a larger JSON object is sent via MQTT, multiple field-key/value pairs are written per InfluxDB measurement, for example: `{"foo":42, "bar": "baz"}` → measurement=`test/topic`, field-key1=`payload.foo__integer`, field-value1=`42`, field-key2=`payload.bar__string`, field-value2=`"baz"`.
 
-    [42, "foo", 3.14, false] → __type = "array"
-                               0__type = "number"
-                               0__number = 42
-                               1__type = "string"
-                               1__string = "foo"
-                               2__type = "number"
-                               2__number = 3.14
-                               3__type = "boolean"
-                               3__boolean = false
-                               3__number = 0
+## Example conversions
 
-    {"foo": "bar"} → __type = "object"
-                     foo__type = "string"
-                     foo__string = "bar"
+    null → payload__type = null
 
-### Unquoted Strings
+    <zero bytes payload> → payload__type = "empty"
 
-    foo bar → __type = "string"
-              __string = "foo bar"
+    true → payload__type = "boolean"
+           payload__boolean = true
+           payload__number = 1
 
-### Empty Payload
+    42 → payload__type = "number"
+         payload__number = 42
 
-    <zero bytes payload> → __type = "null"
+    "42" → payload__type = "string"
+           payload__string: "42"
+           payload__number: 42
 
-### Additional Type Conversions
+_Note:_ A quoted string `"42"` will be interpreted as JSON-string, a `42` (without quotes) will be interpreted as JSON-integer. For un-quoted strings that can't be converted to a JSON data type, we use `raw-string` in `payload__type`:
 
-- `boolean` → `number` (`0`, `1`), because Grafana can't display boolean values in a graph using InfluxQL (it only works using Flux + InfluxDB 2.x).
+    foo → payload__type = "raw-string"
+          payload__string = "foo"
+
+    "foo" → payload__type = "string"
+            payload__string = "foo"
+
+    [42, "foo", 3.14, false] → payload__type = "array"
+                               payload.0__type = "number"
+                               payload.0__number = 42
+                               payload.1__type = "string"
+                               payload.1__string = "foo"
+                               payload.2__type = "number"
+                               payload.2__number = 3.14
+                               payload.3__type = "boolean"
+                               payload.3__boolean = false
+                               payload.3__number = 0
+
+    {"foo": "bar"} → payload__type = "object"
+                     payload.foo__type = "string"
+                     payload.foo__string = "bar"
+
+## Additional Type Conversions
+
+- `boolean` → `number` (`0`, `1`), because Grafana can't display boolean values in a graph using InfluxQL (it only works using Flux with InfluxDB 2.x).
 - We also try to convert `string` → `number`.
-- Special strings like `yes`/`no`, `on`/`off`, … will be converted to boolean values.
+- Special strings like `yes`/`no`, `on`/`off`,… will be converted to boolean values.
 
-## Development
+# Development
 
-### Build
+## Build
 
 Docker development build:
 
@@ -76,7 +95,7 @@ Docker Hub deploy:
         -t dersimn/mqtt-json2influxdb:2.x.x \
         --push .
 
-### Testing
+## Testing
 
 MQTT:
 
