@@ -37,7 +37,7 @@ const Influx = require('influx');
 const processMessage = require('./lib/process-message.js');
 
 log.setLevel(config.verbosity);
-log.info(pkg.mqttPrefix + ' ' + pkg.version + ' starting');
+log.info(pkg.name + ' ' + pkg.version + ' starting');
 log.debug('loaded config: ', config);
 
 const pointBuffer = [];
