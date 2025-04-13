@@ -13,6 +13,7 @@ const config = require('yargs')
     .describe('subscription', 'array of topics to subscribe').array('subscription')
     .describe('chunk-size', 'maximum number of points to buffer before writing to InfluxDB')
     .describe('max-interval', 'maximum time to wait if chunk size is not completely filled before writing to InfluxDB anyway')
+    .describe('static-tag', 'provide static tags that is attached as InfluxDB Tag to every point. Can be used multiple times. Example: --static-tag.foo=bar --static-tag.baz=qux')
     .alias({
         h: 'help',
         m: 'mqtt-url',
@@ -92,6 +93,7 @@ client.on('message', (topic, payload, packet) => {
     // Build InfluxDB Datapoint
     const point = processMessage(topic, packet, receiveTimestamp, {
         $BROKER_URL: config.mqttUrl,
+        ...config.staticTag,
     });
     log.debug('point >', point);
     pointBuffer.push(point);

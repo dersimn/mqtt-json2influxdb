@@ -13,6 +13,8 @@ docker run -d \
     dersimn/mqtt-json2influxdb \
         --mqtt-url mqtt://host.docker.internal \
         --influxdb-url http://username:password@host.docker.internal:8086/databasename
+        --static-tag.foo=bar \
+        --static-tag.baz=qux
 ```
 
 Run `docker run --rm dersimn/mqtt-json2influxdb -h` for a list of options.
@@ -28,6 +30,8 @@ docker run -d \
     --add-host=host.docker.internal:host-gateway \
     -e MQTTJSON2INFLUXDB_MQTT_URL=mqtt://host.docker.internal \
     -e MQTTJSON2INFLUXDB_INFLUXDB_URL=http://username:password@host.docker.internal:8086/databasename \
+    -e MQTTJSON2INFLUXDB_STATIC_TAG__FOO=bar \
+    -e MQTTJSON2INFLUXDB_STATIC_TAG__BAR=qux \
     dersimn/mqtt-json2influxdb
 ```
 
