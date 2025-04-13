@@ -92,7 +92,7 @@ client.on('message', (topic, payload, packet) => {
 
     // Build InfluxDB Datapoint
     const point = processMessage(topic, packet, receiveTimestamp, {
-        $BROKER_URL: config.mqttUrl,
+        'mqtt.url': config.mqttUrl,
         ...config.staticTag,
     });
     log.debug('point >', point);
