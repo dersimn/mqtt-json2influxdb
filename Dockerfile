@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=node:18
+ARG BASE_IMAGE=node:22-alpine
 FROM ${BASE_IMAGE}
 
 COPY . /app
