@@ -90,7 +90,9 @@ client.on('message', (topic, payload, packet) => {
     const receiveTimestamp = new Date();
 
     // Build InfluxDB Datapoint
-    const point = processMessage(topic, packet, receiveTimestamp);
+    const point = processMessage(topic, packet, receiveTimestamp, {
+        $BROKER_URL: config.mqttUrl,
+    });
     log.debug('point >', point);
     pointBuffer.push(point);
 
